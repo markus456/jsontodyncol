@@ -1,6 +1,8 @@
-# jsontodyncol
-JSON to Dynamic Column converter
+# jsontodyncol - JSON to Dynamic Column converter
 
+Parses one or more JSON objects from a file and transforms them into MySQL INSERT statements with the JSON translated into dymanic columns.
+
+For info about dynaic columns, read https://mariadb.com/kb/en/mariadb/dynamic-columns/ .
 ## Building
 
 Build with:
