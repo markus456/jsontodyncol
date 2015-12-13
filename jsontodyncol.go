@@ -36,6 +36,7 @@ import (
     "strings"
     "flag"
 	"path/filepath"
+	"io"
 )
 
 // Command line flags
@@ -65,26 +66,26 @@ func main(){
 		Usage()
         os.Exit(0)
 	case len(flag.Args()) < 1 :
-        fmt.Println("No file provided! See -help output for more info.")
+        fmt.Fprintln(os.Stderr, "No file provided! See -help output for more info.")
         os.Exit(1)
 	case len(*table) == 0:
-        fmt.Println("No table name provided! See -help output for more info.")
+        fmt.Fprintln(os.Stderr, "No table name provided! See -help output for more info.")
         os.Exit(1)
 	case len(*column) == 0:
-		fmt.Println("No column provided! See -help output for more info.")
+		fmt.Fprintln(os.Stderr, "No column provided! See -help output for more info.")
         os.Exit(1)
 	default:
 	}
 
     file, err := os.Open(flag.Args()[0])
     if err != nil{
-        fmt.Println("Fatal error:", err)
+        fmt.Fprintln(os.Stderr, "Fatal error:", err)
         os.Exit(1)
     }
 
     decoder := json.NewDecoder(file)
 	var err_d error = nil
-
+	values := 0
     for err_d == nil{
         str := "INSERT INTO "
 		if len(*database) > 0 {
@@ -98,11 +99,16 @@ func main(){
 			if err_d = decoder.Decode(&obj); err_d != nil {
 				str = strings.TrimRight(str, ",\n")
 				str += ";"
+
+				if err_d != io.EOF {
+					fmt.Fprintln(os.Stderr, err_d)
+				}
+
 			} else {
 				str += " ("
 				str += PrintObject(&obj)
 				n_inserts--
-
+				values++
 				if n_inserts <= 0{
 					// Last value
 					str += ");"
@@ -116,8 +122,17 @@ func main(){
 				}
 			}
 		}
-        fmt.Println(str)
+
+		// At least one value was read
+		if n_inserts < *insert_size {
+			fmt.Println(str)
+		}
     }
+
+	if values == 0 {
+		fmt.Fprintln(os.Stderr, "No valid values read.")
+	}
+
 }
 
 // Print a JSON array as a comma-separated list strings
@@ -138,6 +153,7 @@ func PrintList(mylist []interface{}) string{
             str += strconv.FormatFloat(v, 'f', -1, 64)
 
         default:
+			fmt.Fprintln(os.Stderr, "Unknown type:", v)
 			// Unknown value
         }
     }
