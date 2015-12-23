@@ -50,7 +50,13 @@ var column = flag.String("column", "", "Column name")
 // Print usage
 func Usage(){
 	fmt.Println("JSON to MariaDB Dynamic Column converter 0.1")
-	fmt.Println("Usage:", filepath.Base(os.Args[0]), "-table TABLE -column COLUMN FILE")
+	fmt.Println()
+	fmt.Println("Usage:", filepath.Base(os.Args[0]), "-table TABLE -column COLUMN [OPTIONS] [FILE]")
+	fmt.Println()
+	fmt.Println("Reads one or more JSON objects from a file and convert them into MariaDB compatible")
+	fmt.Println("INSERT statements. If no input file is provided the standard input is read.")
+	fmt.Println()
+	fmt.Println("Options:")
 	flag.PrintDefaults()
 }
 
