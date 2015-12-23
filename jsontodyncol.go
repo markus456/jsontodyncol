@@ -52,7 +52,6 @@ func Usage(){
 	fmt.Println("JSON to MariaDB Dynamic Column converter 0.1")
 	fmt.Println("Usage:", filepath.Base(os.Args[0]), "-table TABLE -column COLUMN FILE")
 	flag.PrintDefaults()
-
 }
 
 // Main function.
@@ -65,9 +64,6 @@ func main(){
 	case *help:
 		Usage()
         os.Exit(0)
-	case len(flag.Args()) < 1 :
-        fmt.Fprintln(os.Stderr, "No file provided! See -help output for more info.")
-        os.Exit(1)
 	case len(*table) == 0:
         fmt.Fprintln(os.Stderr, "No table name provided! See -help output for more info.")
         os.Exit(1)
@@ -77,13 +73,20 @@ func main(){
 	default:
 	}
 
-    file, err := os.Open(flag.Args()[0])
-    if err != nil{
-        fmt.Fprintln(os.Stderr, "Fatal error:", err)
-        os.Exit(1)
-    }
+	// If no inputs provided, use Stdin
+	var input *os.File
+	if len(flag.Args()) < 1 {
+		input = os.Stdin
+	} else {
+		file, err := os.Open(flag.Args()[0])
+		if err != nil{
+			fmt.Fprintln(os.Stderr, "Fatal error:", err)
+			os.Exit(1)
+		}
+		input = file
+	}
 
-    decoder := json.NewDecoder(file)
+    decoder := json.NewDecoder(input)
 	var err_d error = nil
 	values := 0
     for err_d == nil{
